@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { Grid, Form, Segment, Button, Header, Message, Icon } from "semantic-ui-react"
 import { Link } from "react-router-dom"
+import md5 from 'md5'
 
 import firebase from '../../firebase'
 
@@ -13,6 +14,7 @@ export default class Register extends Component {
     passwordConfirmation: '',
     errors: [],
     loading: false,
+    userRef: firebase.database().ref('users')
   }
   displayErrors = errors => errors.map((error, i) => <p key={i} >{error.message}</p>)
 
@@ -54,13 +56,27 @@ export default class Register extends Component {
   handleSubmit = event => {
     event.preventDefault();
     if (this.isFormValid()) {
-      this.setState({ errors: [], loding: true })
+      this.setState({ errors: [], loading: true })
 
       firebase.auth().createUserWithEmailAndPassword(this.state.email, this.state.password)
-        .then(createUser => {
-          console.log(createUser)
+        .then(createdUser => {
+          console.log(createdUser)
+          createdUser.user.updateProfile({
+            displayName: this.state.username,
+            photoURL: `http://gravatar.com/avatar/${md5(createdUser.user.email)}?d=identicon`
+          })
+            .then(() => {
+              this.saveUser(createdUser).then(() => {
 
-          this.setState({ loading: false })
+                this.setState({ loading: false })
+              })
+            }).catch(
+              err => {
+                console.error(err)
+                this.setState({ errors: this.state.errors.concat(err), loading: false })
+
+              }
+            )
         })
         .catch(err => {
           console.error(err)
@@ -69,11 +85,17 @@ export default class Register extends Component {
     }
 
   }
+  saveUser = createdUser => {
+    return this.state.userRef.child(createdUser.user.uid).set({
+      name: createdUser.user.displayName,
+      avatar: createdUser.user.photoURL
+    })
+  }
 
   handleInputError = (errors, inputName) => {
     return errors.some(error => error.message.toLowerCase().includes(inputName)) ? 'error' : ''
   }
-  
+
   render() {
     const { username, email, password, passwordConfirmation, errors, loading } = this.state
     return (
@@ -103,7 +125,7 @@ export default class Register extends Component {
                 fluid name="passwordConfirmation" icon="repeat" iconPosition="left"
                 placeholder="Password Confirmation" onChange={this.handleChange} type="password" value={passwordConfirmation} />
 
-              <Button disabled={loading} className={loading ? 'loading' : ''} color="orange" fluid size="large">Submit</Button>
+              <Button disabled={loading} className={loading ? 'loading':''} color="orange" fluid size="large">Submit</Button>
             </Segment>
           </Form>
           {errors.length > 0 &&
