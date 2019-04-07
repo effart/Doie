@@ -1,12 +1,19 @@
 import React, { Component } from 'react'
 import { Grid, Header, Icon, Dropdown } from "semantic-ui-react"
 import firebase from "../../firebase"
-export default class UserPanel extends Component {
+
+
+class UserPanel extends Component {
+
+// TODO: there is  no need of to assign props to state
+    state={
+        user:this.props.currentUser
+    }
 
     dropdownOption = () => [
         {
             key: "user",
-            text: <span>Signed in as <strong>User</strong></span>,
+            text: <span>Signed in as <strong>{this.state.user.displayName}</strong></span>,
             disabled: true
         },
         {
@@ -19,13 +26,14 @@ export default class UserPanel extends Component {
         }
     ]
 
-    handleSignout =()=>{
+    handleSignout = () => {
         firebase
-        .auth()
-        .signOut()
-        .then((a)=>console.log(a +'signout'))
+            .auth()
+            .signOut()
+            .then((a) => console.log(a + 'signout'))
     }
     render() {
+        console.log(this.props.currentUser)
         return (
             <Grid style={{ background: "#4c3c4c" }}>
                 <Grid.Column>
@@ -39,7 +47,7 @@ export default class UserPanel extends Component {
 
                     {/* User DropDown */}
                     <Header inverted style={{ padding: "0.25em" }} as="h4" >
-                        <Dropdown trigger={<span>User</span>}
+                        <Dropdown trigger={<span>{this.state.user.displayName}</span>}
                             options={this.dropdownOption()} />
                     </Header>
 
@@ -48,3 +56,5 @@ export default class UserPanel extends Component {
         )
     }
 }
+
+export default UserPanel
