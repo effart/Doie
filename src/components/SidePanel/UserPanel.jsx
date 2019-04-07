@@ -1,13 +1,13 @@
 import React, { Component } from 'react'
-import { Grid, Header, Icon, Dropdown } from "semantic-ui-react"
+import { Grid, Header, Icon, Dropdown, Image } from "semantic-ui-react"
 import firebase from "../../firebase"
 
 
 class UserPanel extends Component {
 
-// TODO: there is  no need of to assign props to state
-    state={
-        user:this.props.currentUser
+    // TODO: there is  no need of to assign props to state
+    state = {
+        user: this.props.currentUser
     }
 
     dropdownOption = () => [
@@ -34,6 +34,7 @@ class UserPanel extends Component {
     }
     render() {
         console.log(this.props.currentUser)
+        const { user } = this.state
         return (
             <Grid style={{ background: "#4c3c4c" }}>
                 <Grid.Column>
@@ -47,7 +48,10 @@ class UserPanel extends Component {
 
                     {/* User DropDown */}
                     <Header inverted style={{ padding: "0.25em" }} as="h4" >
-                        <Dropdown trigger={<span>{this.state.user.displayName}</span>}
+                        <Dropdown trigger={<span>
+                            <Image src={user.photoURL} spaced='right' avatar />
+                            {user.displayName}
+                        </span>}
                             options={this.dropdownOption()} />
                     </Header>
 
