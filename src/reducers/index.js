@@ -4,7 +4,7 @@ import * as actionTypes from "../actions/types";
 
 const initialUserState = {
   currentUser: null,
-  isloading: true
+  isLoading: true
 };
 
 const user_reducer = (state = initialUserState, action) => {
@@ -12,7 +12,7 @@ const user_reducer = (state = initialUserState, action) => {
     case actionTypes.SET_USER:
       return {
         currentUser: action.payload.currentUser,
-        isloading: false
+        isLoading: false
       };
     default:
       return state;
