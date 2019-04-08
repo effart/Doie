@@ -1,32 +1,43 @@
 import React, { Component } from 'react'
 import { Menu, Icon, Modal, Form, Input, Button } from 'semantic-ui-react';
 
-import {setCurrentChannel} from "../../actions"
-import{connect} from 'react-redux'
+import { setCurrentChannel } from "../../actions"
+import { connect } from 'react-redux'
 import firebase from '../../firebase'
 
- class Channels extends Component {
+class Channels extends Component {
 
     state = {
-        user: this.props.currentUser,
+        activeChannel:'',
+        user: this.props.currentUser,  // TODO: there is no need to assign props to state
         channels: [],
         channelName: '',
         channelDetails: '',
         channelsRef: firebase.database().ref('channels'),
-        modal: false
+        modal: false,
+        firstLoad: true,
     }
 
-    componentDidMount(){
+    componentDidMount() {
         this.addListeners();
     }
 
-    addListeners =()=>{
-        let loadedChannels =[];
-        this.state.channelsRef.on('child_added',snap =>{
+    addListeners = () => {
+        let loadedChannels = [];
+        this.state.channelsRef.on('child_added', snap => {
             loadedChannels.push(snap.val())
-            this.setState({channels:loadedChannels})
+            this.setState({ channels: loadedChannels }, () => this.setFirstChannel())
         })
+    }
 
+    setFirstChannel = () => {
+        const firstChannel = this.state.channels[0]
+        if (this.state.firstLoad && this.state.channels.length > 0) {
+            this.props.setCurrentChannel(firstChannel)
+            this.setActiveChannel(firstChannel)
+        }
+
+        this.setState({ firstLoad: false })
     }
 
     addChannel = () => {
@@ -44,7 +55,7 @@ import firebase from '../../firebase'
             }
         }
 
-        
+
         channelsRef.child(key)
             .update(newChannel)
             .then(() => {
@@ -69,14 +80,22 @@ import firebase from '../../firebase'
         this.setState({ [event.target.name]: event.target.value })
     }
 
-    changeChannel= channel=>{
+    changeChannel = channel => {
         console.log("change channel click")
+        this.setActiveChannel(channel)
         this.props.setCurrentChannel(channel)
     }
 
-    displayChannels= channels=> channels.length > 0 && channels.map(channel =>(
-        <Menu.Item key ={channel.id} name={channel.name}  style={{opacity:0.7}} 
-        onClick={()=> this.changeChannel(channel)}>
+    setActiveChannel = channel=>{
+        this.setState({activeChannel:channel.id})
+    }
+
+    displayChannels = channels => channels.length > 0 && channels.map(channel => (
+        <Menu.Item key={channel.id} 
+        name={channel.name} 
+        style={{ opacity: 0.7 }}
+        active={channel.id === this.state.activeChannel}
+        onClick={() => this.changeChannel(channel)}>
             # {channel.name}
         </Menu.Item>
     ))
@@ -132,4 +151,4 @@ import firebase from '../../firebase'
     }
 }
 
-export default connect(null,{setCurrentChannel})(Channels)
+export default connect(null, { setCurrentChannel })(Channels)
