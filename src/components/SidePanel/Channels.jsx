@@ -8,7 +8,7 @@ import firebase from '../../firebase'
 class Channels extends Component {
 
     state = {
-        activeChannel:'',
+        activeChannel: '',
         user: this.props.currentUser,  // TODO: there is no need to assign props to state
         channels: [],
         channelName: '',
@@ -22,12 +22,20 @@ class Channels extends Component {
         this.addListeners();
     }
 
+    componentWillUnmount() {
+        this.removeListeners()
+    }
+
     addListeners = () => {
         let loadedChannels = [];
         this.state.channelsRef.on('child_added', snap => {
             loadedChannels.push(snap.val())
             this.setState({ channels: loadedChannels }, () => this.setFirstChannel())
         })
+    }
+
+    removeListeners = () => {
+        this.setActiveChannel.channelsRef.off()
     }
 
     setFirstChannel = () => {
@@ -86,16 +94,16 @@ class Channels extends Component {
         this.props.setCurrentChannel(channel)
     }
 
-    setActiveChannel = channel=>{
-        this.setState({activeChannel:channel.id})
+    setActiveChannel = channel => {
+        this.setState({ activeChannel: channel.id })
     }
 
     displayChannels = channels => channels.length > 0 && channels.map(channel => (
-        <Menu.Item key={channel.id} 
-        name={channel.name} 
-        style={{ opacity: 0.7 }}
-        active={channel.id === this.state.activeChannel}
-        onClick={() => this.changeChannel(channel)}>
+        <Menu.Item key={channel.id}
+            name={channel.name}
+            style={{ opacity: 0.7 }}
+            active={channel.id === this.state.activeChannel}
+            onClick={() => this.changeChannel(channel)}>
             # {channel.name}
         </Menu.Item>
     ))
