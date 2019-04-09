@@ -13,7 +13,8 @@ export default class Messages extends Component {
     channel: this.props.currentChannel, //TODO: there is need to assign props to state
     user: this.props.currentUser,        //TODO: there is need to assign props to state
     messages: [],
-    messagesLoading:true,
+    messagesLoading: true,
+    progressBar:false,
   }
 
   componentDidMount() {
@@ -41,20 +42,26 @@ export default class Messages extends Component {
     })
   }
 
-  displayMessages = messages=>(
-    messages.length > 0 &&  messages.map(message=>(
-      <Message key={message.timestamp} message={message} user={this.state.user}/>
+  displayMessages = messages => (
+    messages.length > 0 && messages.map(message => (
+      <Message key={message.timestamp} message={message} user={this.state.user} />
     ))
   )
+
+  isProgressBarVisible = percent => {
+    if (percent > 0) {
+      this.setState({ progressBar: true })
+    }
+  }
   render() {
 
-    const { messagesRef,messages, channel, user } = this.state
+    const { messagesRef, messages, channel, user,progressBar } = this.state
     return (
       <React.Fragment>
         <MessagesHeader />
 
         <Segment>
-          <Comment.Group className="messages">
+          <Comment.Group className={progressBar ? 'messages__progress' : 'messages'}>
             {this.displayMessages(messages)}
           </Comment.Group>
 
@@ -65,6 +72,7 @@ export default class Messages extends Component {
           messagesRef={messagesRef}
           currentChannel={channel}
           currentUser={user}
+          isProgressBarVisible={this.isProgressBarVisible}
         />
       </React.Fragment>
     )
