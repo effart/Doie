@@ -35,6 +35,7 @@ class Channels extends Component {
     }
 
     removeListeners = () => {
+        console.log(this.setActiveChannel.channelsRef)
         this.setActiveChannel.channelsRef.off()
     }
 

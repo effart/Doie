@@ -49,7 +49,6 @@ export default class Messages extends Component {
   render() {
 
     const { messagesRef,messages, channel, user } = this.state
-
     return (
       <React.Fragment>
         <MessagesHeader />
