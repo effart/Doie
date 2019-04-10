@@ -162,6 +162,7 @@ export default class MessageForm extends Component {
                         icon='edit' />
                     <Button
                         onClick={this.openModal}
+                        disabled={uploadState ==='uploading'}
                         color='teal'
                         content='Upload Media'
                         labelPosition='right'
