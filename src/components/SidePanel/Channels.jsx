@@ -72,8 +72,7 @@ class Channels extends Component {
         this.setState({notifications})
     }
     removeListeners = () => {
-        console.log(this.setActiveChannel.channelsRef)
-        this.setActiveChannel.channelsRef.off()
+        this.state.channelsRef.off()
     }
 
     setFirstChannel = () => {
