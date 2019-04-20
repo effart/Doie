@@ -1,22 +1,57 @@
 import React, { Component } from 'react'
 import firebase from '../../firebase'
+import  {connect} from 'react-redux'
+import {setColors} from '../../actions'
 
 import { Sidebar, Menu, Divider, Button, Modal, Icon ,Label, Segment } from 'semantic-ui-react';
 import {SliderPicker} from 'react-color'
 
 
-export default class ColorPanel extends Component {
+class ColorPanel extends Component {
 
   state = {
     modal: false,
-    primary:'',
-    secondary:'',
+    primary:"",
+    secondary:"",
     user: this.props.currentUser,
-    usersRef: firebase.database().ref('users')
+    usersRef: firebase.database().ref('users'),
+    userColors:[]
+  }
+
+  componentDidMount(){
+    if(this.state.user){
+      this.addListener(this.state.user.uid)
+    }
+  }
+
+  addListener = userId =>{
+    let userColors =[]
+    this.state.usersRef.child(`${userId}/colors`)
+                        .on('child_added',snap=>{
+                            userColors.unshift(snap.val())
+                            console.log(userColors)
+                            this.setState({userColors})
+                          })
   }
 
   handleChangePrimary =color =>this.setState({primary:color.hex})
   handleChangeSecondary =color =>this.setState({secondary:color.hex})
+
+  displayUserColors = colors => (
+    colors.length > 0 && colors.map((color,i)=>(
+      <React.Fragment key={i}>
+        <Divider/>
+        <div 
+          className="color__container" 
+          onClick={()=> this.props.setColors(color.primary,color.secondary)}>
+           <div className="color__square" style={{background:color.primary}}>
+              <div className="color__overlay" style={{background:color.secondary}}/>
+           </div>
+        </div>
+      </React.Fragment>
+    ))
+  )
+  
 
   openModal =() => this.setState({modal: true})
   closeModal =() => this.setState({modal: false})
@@ -42,15 +77,16 @@ export default class ColorPanel extends Component {
             .catch(err => console.error(err))
   }
   render() {
-    const {modal , primary , secondary} =  this.state
+    const {modal , primary , secondary , userColors} =  this.state
 
     return (
       <Sidebar as={Menu} inverted vertical visible icon='labeled' width='very thin'>
         <Divider />
         <Button icon='add' size='small' color='blue' onClick={this.openModal} />
 
-        {/* color  Picker Modal */}
+        {this.displayUserColors(userColors)}
 
+        {/* color  Picker Modal */}
         <Modal basic open={modal} onClose={this.closeModal}>
 
           <Modal.Header>Choose App Colors</Modal.Header>
@@ -81,3 +117,5 @@ export default class ColorPanel extends Component {
     )
   }
 }
+
+export default connect(null ,{setColors})(ColorPanel)
