@@ -210,13 +210,13 @@ class Messages extends Component {
     `${this.state.privateChannel ? '@' : '#'}${channel.name}` 
     : ''}
 
-  displayTypingUsers = users =>{
+  displayTypingUsers = users =>
     users.length > 0 && users.map(user =>(
       <div style={{display:'flex', alignItem:'center' , marginBottom:'0,2em'}} key={user.id}>
         <span className='user__typing'>{user.name} is typing</span><Typing/>
       </div>
     ))
-  }
+  
 
   render() {
 
