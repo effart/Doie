@@ -11,7 +11,14 @@ class UserPanel extends Component {
         modal:false,
         previewImage:'',
         croppedImage:'',
-        blob:''
+        blob:'',
+        uploadedCroppedImage:'',
+        storageRef: firebase.storage().ref(),
+        userRef: firebase.auth().currentUser,
+        usersRef: firebase.database().ref('users'),
+        metadata:{
+            contentType: 'image/jpeg'
+        }
     }
 
     openModal =()=>this.setState({modal:true})
@@ -33,6 +40,41 @@ class UserPanel extends Component {
         }
     ]
 
+    uploadCroppedImage =()=>{
+         const {storageRef , userRef ,blob ,metadata} =this.state
+
+         storageRef.child(`avatars/user-${userRef.uid}`)
+                   .put(blob,metadata)
+                   .then(snap =>{
+                       snap.ref.getDownloadURL().then(downloadURL =>{
+                           this.setState({uploadedCroppedImage: downloadURL} ,()=> this.changeAvatar())
+                       })
+                   })
+    }
+
+    changeAvatar =()=>{
+        this.state.userRef
+            .updateProfile({
+                photoURL:this.state.uploadedCroppedImage
+            })
+            .then(()=> {
+                console.log('photo url updated')
+                this.closeModal()
+            })
+            .catch(err=>{
+                console.error(err)
+            })
+
+        this.state.usersRef
+            .child(this.state.user.uid)
+            .update({ avatar: this.state.uploadedCroppedImage})
+            .then(()=>{
+                console.log('User avatar updated')
+            })
+            .catch(err=>{
+                console.error(err)
+            })
+    }
     handleChange = e =>{
         const file =e.target.files[0]
         const reader =new FileReader()
@@ -125,7 +167,7 @@ class UserPanel extends Component {
                                 </Grid>
                             </Modal.Content>
                             <Modal.Actions>
-                                {croppedImage && <Button color='green' inverted>
+                                {croppedImage && <Button color='green' inverted onClick={this.uploadCroppedImage}>
                                     <Icon name='save'/> Change Avatar
                                 </Button>}
                                 <Button color='green' inverted onClick={this.handleCropImage}>
