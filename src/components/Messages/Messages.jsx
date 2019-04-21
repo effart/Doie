@@ -60,7 +60,7 @@ class Messages extends Component {
     this.state.typingRef.child(channelId).on('child_removed', snap =>{
       const index =typingUsers.findIndex(user => user.id === snap.key)
       if(index !== -1){
-        typingUsers = typingUsers.filter(user => user.id === snap.key)
+        typingUsers = typingUsers.filter(user => user.id !== snap.key)
         this.setState({typingUsers})
       }
     })
