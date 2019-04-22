@@ -29,21 +29,45 @@ class Messages extends Component {
     searchResults: [],
     typingRef: firebase.database().ref('typing'),
     typingUsers:[],
-    connectedRef: firebase.database().ref('.info/connected')
+    connectedRef: firebase.database().ref('.info/connected'),
+    listeners: []
   }
 
   componentDidMount() {
-    const { user, channel } = this.state;
+    const { user, channel , listeners} = this.state;
 
     if (channel && user) {
+      this.removeListeners(listeners)
       this.addListeners(channel.id)
       this.addUserStarsListeners(channel.id,user.uid)
     }
   }
 
+  componentWillUnmount(){
+    this.removeListeners(this.state.listeners)
+    this.state.connectedRef.off()
+  }
+
+  removeListeners = listeners =>{
+    listeners.forEach(listener => {
+      listener.ref.child(listener.id).off(listener.event)
+    });
+  }
+
   componentDidUpdate(prevProps ,prevState){
     if(this.messageEnd){
       this.scrollToBottom()
+    }
+  }
+
+  addToListeners = (id,ref,event)=>{
+    const index = this.state.listeners.findIndex(listener=>{
+      return ( listener.id === id && listener.ref === ref && listener.event === event)
+    })
+
+    if(index === -1){
+      const newListener={id,ref,event}
+      this.setState({listeners: this.state.listeners.concat(newListener)})
     }
   }
 
@@ -66,6 +90,7 @@ class Messages extends Component {
         this.setState({typingUsers})
       }
     })
+    this.addToListeners(channelId,this.state.typingRef,'child_added')
 
     this.state.typingRef.child(channelId).on('child_removed', snap =>{
       const index =typingUsers.findIndex(user => user.id === snap.key)
@@ -74,6 +99,7 @@ class Messages extends Component {
         this.setState({typingUsers})
       }
     })
+    this.addToListeners(channelId,this.state.typingRef,'child_removed')
 
     this.state.connectedRef.on('value',snap =>{
       if(snap.val() === true){
@@ -89,6 +115,8 @@ class Messages extends Component {
       }
     })
   }
+
+
   addMessageListeners = channelId => {
     let loadedMessages = []
     const ref = this.getMessagesRef()
@@ -102,6 +130,7 @@ class Messages extends Component {
       this.countUniqueUsers(loadedMessages)
       this.countUserPosts(loadedMessages)
     })
+    this.addToListeners(channelId,ref,'child_added')  
   }
 
   addUserStarsListeners =(channelId ,userId)=>{

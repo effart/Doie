@@ -8,19 +8,30 @@ class DirectMessages extends Component {
         activeChannel:'',
         user: this.props.currentUser, //TODO: there in no need to assign props to state
         users: [],
-        userRef: firebase.database().ref('users'),
+        usersRef: firebase.database().ref('users'),
         connectedRef: firebase.database().ref('.info/connected'),
         presenceRef: firebase.database().ref('presence')
     }
+
     componentDidMount() {
         if (this.state.user) {
             this.addListeners(this.state.user.uid)
         }
     }
 
+    componentWillUnmount(){
+        this.removeListeners()
+    }
+
+    removeListeners =()=>{
+        this.state.usersRef().off()
+        this.state.presenceRef().off()
+        this.state.connectedRef().off()
+    }
+
     addListeners = currentUserUid => {
         let loadedUsers = []
-        this.state.userRef.on('child_added', snap => {
+        this.state.usersRef.on('child_added', snap => {
             if (currentUserUid !== snap.key) {
                 let user = snap.val();
                 user['uid'] = snap.key;
