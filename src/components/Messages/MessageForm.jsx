@@ -34,7 +34,13 @@ export default class MessageForm extends Component {
         this.setState({ [event.target.name]: event.target.value })
     }
 
-    handleKeyDown =()=>{
+    handleKeyDown = event =>{
+        if(event.keyCode ===13){
+            this.sendMessage()
+        }
+        // if(event.ctrlKey && event.keyCode ===13){  //this combine ctrl + Enter
+        //     this.sendMessage()
+        // }
         const {message , typingRef ,channel ,user}= this.state
         if(message){
             typingRef
